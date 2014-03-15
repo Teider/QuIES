@@ -5,7 +5,7 @@
 
 void ConfigureUART(void);
 void ConfigureXBeeUART(void);
-void ConfigurUARTSensores(void);
+void ConfigureUARTSensores(void);
 void checkUART(uint32_t UART_checked);
 void echoUART(uint32_t UART_sender, uint32_t UART_receiver);
 
@@ -16,5 +16,7 @@ void getCommand(void);
 void readType(void);
 
 void check(void);
+
+void requestMPUData(void);
 
 #endif //__SERIAL_H__

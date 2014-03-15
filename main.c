@@ -159,9 +159,9 @@ main(void)
     //
     ConfigureUART();
 		ConfigureXBeeUART();
+		ConfigureUARTSensores();
 		ButtonsInit();
 		inicializa_motores();
-		//inicializaGiro();
 
     //
     // Enable the peripherals used by this example.
@@ -182,12 +182,13 @@ main(void)
    
     TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
 
-
     //
     // Enable the timers.
     //
 		
     TimerEnable(TIMER1_BASE, TIMER_A);
+		
+		//inicializaGiro();
 		
 		//ROM_SysCtlDelay(ROM_SysCtlClockGet()/3);
 //		
