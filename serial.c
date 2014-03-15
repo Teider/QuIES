@@ -40,6 +40,13 @@ char sensorData[12];
 int sensorDataCounter = 0;
 bool sensorDataDone = false;
 
+extern uint32_t sonar_cima_mm;
+extern uint32_t sonar_baixo_mm;
+extern uint32_t sonar_frente_mm;
+extern uint32_t sonar_tras_mm;
+extern uint32_t sonar_esquerda_mm;
+extern uint32_t sonar_direita_mm;
+
 
 //*****************************************************************************
 //
@@ -205,6 +212,25 @@ void enviarDiagnostico(){
 	}
 	
 	UARTCharPutNonBlocking(UART3_BASE, c);
+}
+
+void enviarDadosSonares() {
+	
+	enviaID();
+	UARTCharPutNonBlocking(UART3_BASE, MESSAGE_TYPE_DADOS_SONAR);
+	
+	UARTCharPutNonBlocking(UART3_BASE, ((sonar_cima_mm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART3_BASE, (sonar_cima_mm & 0xFF));
+	UARTCharPutNonBlocking(UART3_BASE, ((sonar_baixo_mm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART3_BASE, (sonar_baixo_mm & 0xFF));
+	UARTCharPutNonBlocking(UART3_BASE, ((sonar_frente_mm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART3_BASE, (sonar_frente_mm & 0xFF));
+	UARTCharPutNonBlocking(UART3_BASE, ((sonar_tras_mm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART3_BASE, (sonar_tras_mm & 0xFF));
+	UARTCharPutNonBlocking(UART3_BASE, ((sonar_esquerda_mm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART3_BASE, (sonar_esquerda_mm & 0xFF));
+	UARTCharPutNonBlocking(UART3_BASE, ((sonar_direita_mm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART3_BASE, (sonar_direita_mm & 0xFF));
 }
 
 void readType() {

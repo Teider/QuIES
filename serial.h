@@ -11,6 +11,8 @@ void echoUART(uint32_t UART_sender, uint32_t UART_receiver);
 
 //void sendShort(uint_fast16_t int16, uint32_t UART_sender);
 
+void enviarDadosSonares(void);
+
 void readPackage(void);
 void getCommand(void);
 void readType(void);

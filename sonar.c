@@ -11,6 +11,8 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 
+#include "serial.h"
+
 #include <math.h>
 
 uint32_t counter_sonar_cima, start_sonar_cima;
@@ -110,6 +112,8 @@ void Timer0IntHandler(void) {
 	sonar_tras_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
 	sonar_esquerda_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
 	sonar_direita_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
+	
+	enviarDadosSonares();
 }
 
 void configuraSonar() {
