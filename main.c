@@ -97,9 +97,6 @@ __error__(char *pcFilename, uint32_t ui32Line)
 //
 //*****************************************************************************
 
-void Timer0IntHandler(void) {
-}
-
 //int counter_leitura_mpu6050 = 0;
 
 void Timer1IntHandler(void)
@@ -176,8 +173,8 @@ main(void)
     //
     TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
     TimerLoadSet(TIMER1_BASE, TIMER_A, SysCtlClockGet()/100000);
-    
-
+		
+		
     //
     // Setup the interrupts for the timer timeouts.
     //
