@@ -36,6 +36,10 @@ bool pacotePronto = false;
 
 char recebido = 'r';
 
+char sensorData[12];
+int sensorDataCounter = 0;
+bool sensorDataDone = false;
+
 
 //*****************************************************************************
 //
@@ -101,6 +105,36 @@ void ConfigureXBeeUART(void)
 		UARTEnable(UART3_BASE);
 }
 
+void ConfigureUARTSensores() {
+	
+		//
+    // Enable the GPIO Peripheral used by the UART.
+    //
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+
+    //
+    // Enable UART2
+    //
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART4);
+
+    //
+    // Configure GPIO Pins for UART mode.
+    //
+    GPIOPinConfigure(GPIO_PC4_U4RX);
+    GPIOPinConfigure(GPIO_PC5_U4TX);
+    GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5);
+
+    //
+    // Use the internal 16MHz oscillator as the UART clock source.
+    //
+    UARTClockSourceSet(UART4_BASE, UART_CLOCK_PIOSC);
+		UARTConfigSetExpClk(UART4_BASE, 16000000, 9600,
+                        (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
+                         UART_CONFIG_PAR_NONE));
+		
+		UARTEnable(UART4_BASE);
+}
+
 
 void getCommand(){
 	
@@ -132,9 +166,24 @@ void readPackage(){
 		
 		getCommand();
 	}
+	
+	while(UARTCharsAvail(UART4_BASE)) {
+		sensorData[sensorDataCounter++] = (char)UARTCharGet(UART4_BASE);
+		
+		if (sensorDataCounter == 12) {
+			sensorDataDone = true;
+			sensorDataCounter = 0;
+			
+			/*
+			while (sensorDataDone) {
+				SysCtlDelay(SysCtlClockGet() / 1000000);
+			}
+			*/
+		}
+	}
 }
 
-void enviaID(){
+void enviaID() {
 	
 	UARTCharPutNonBlocking(UART3_BASE, 0x00);
 	UARTCharPutNonBlocking(UART3_BASE, 0x00);
@@ -152,7 +201,7 @@ void enviarDiagnostico(){
 	
 	if(motoresInicializados == true){
 		
-		c |= DIAGNOSTIC_READY;	
+		c |= DIAGNOSTIC_READY;
 	}
 	
 	UARTCharPutNonBlocking(UART3_BASE, c);
@@ -178,10 +227,15 @@ void readType() {
 			packageSize = 5;
 			break;
 		case MESSAGE_TYPE_HANDSHAKE:
+			packageSize = 4;
 			enviarDiagnostico();
 			break;
 		
-		
 	}
 	
+}
+
+void requestMPUData() {
+	UARTCharPutNonBlocking(UART4_BASE, MESSAGE_TYPE_PEDE_DADOS);
+	sensorDataDone = false;
 }

@@ -18,3 +18,7 @@
 *.app
 
 rvmdk/*
+
+*.uvgui*
+*.dep
+*.uvopt
