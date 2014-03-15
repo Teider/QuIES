@@ -41,6 +41,7 @@
 #include "motors.h"
 #include "giroacel.h"
 #include "serial.h"
+#include "sonar.h"
 
 #include "drivers/buttons.h"
 
@@ -116,12 +117,12 @@ void checkButtons(void) {
 	switch (button_changed & ALL_BUTTONS) {
 		case LEFT_BUTTON:
 			if (button_state & LEFT_BUTTON) {
-				//iniciaLeitura();
+				iniciaLeituraSonar();
 			}
 		break;
 		case RIGHT_BUTTON:
 			if (button_state & RIGHT_BUTTON) {
-				//iniciaLeitura();
+				iniciaLeituraSonar();
 			}
 		break;
 	}
@@ -188,6 +189,7 @@ main(void)
 		
     TimerEnable(TIMER1_BASE, TIMER_A);
 		
+		configuraSonar();
 		//inicializaGiro();
 		
 		//ROM_SysCtlDelay(ROM_SysCtlClockGet()/3);
