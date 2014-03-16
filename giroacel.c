@@ -54,7 +54,7 @@ void inicializaGiro() {
 	
 }
 
-void iniciaLeitura() {
+void iniciaLeituraMPU6050() {
 	requestMPUData();
 }
 
@@ -72,6 +72,7 @@ void atualizaLeituras() {
 		
 		fGyro[i] = (((double)rawGyro[i]) / 131.0);
 	}
+	
 	
 	double ax, ay, az;
 	ax = ((rawAccel[0] / 16384.0) * 9.81);

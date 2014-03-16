@@ -16,13 +16,13 @@
 
 #define SPEED_STEP (5)
 
-//bool debug_red = true;
-//bool debug_blue = true;
-//bool debug_green = true;
+bool debug_red = true;
+bool debug_blue = true;
+bool debug_green = true;
 
 int counter_ppm = 0;
 
-bool motoresInicializados = false;
+bool motoresInicializados = true;
 int counterInici = 0;
 
 typedef struct motor {
@@ -57,9 +57,9 @@ void inicializa_motores(void) {
   // Enable the GPIO pins for the LED (PF1 & PF2).
   //
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_0);
-	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1);
-	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2);
-  ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
+	if (debug_red) ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1);
+	if (debug_blue) ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2);
+  if (debug_green) ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
 }
 
 void changeSpeed(int id_motor, int nova_velocidade) {

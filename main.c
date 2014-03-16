@@ -54,6 +54,9 @@ extern bool g_bMPU6050Done_read;
 extern float fAccel[3], fGyro[3];
 extern uint_fast16_t rawAccel[3], rawGyro[3];
 
+extern bool generate_pulse_flag;
+bool pulse_flag;
+
 uint_fast16_t counter_sonar;
 
 
@@ -103,11 +106,18 @@ __error__(char *pcFilename, uint32_t ui32Line)
 void Timer1IntHandler(void)
 {
 	update_ppm();
-//	if (counter_leitura_mpu6050 == 10000) {
-//		//iniciaLeitura();
-//		counter_leitura_mpu6050 = 0;
-//	}
-//	counter_leitura_mpu6050++;
+	
+	if (generate_pulse_flag) {
+		GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, GPIO_PIN_0);
+		pulse_flag = true;
+		generate_pulse_flag = false;
+	}
+	
+	if (pulse_flag) {
+		GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, 0);
+		pulse_flag = false;
+	}
+	
 }
 
 void checkButtons(void) {

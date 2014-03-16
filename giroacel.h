@@ -5,6 +5,6 @@
 
 void inicializaGiro(void);
 void atualizaLeituras(void);
-void iniciaLeitura(void);
+void iniciaLeituraMPU6050(void);
 
 #endif //__GIROACEL_H__

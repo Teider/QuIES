@@ -12,7 +12,7 @@
 #include "motion.h"
 #include "diagnostic_msg.h"
 
-
+#define UART_PC_COMM	UART0_BASE
 
 //extern bool debug_red;
 //extern bool debug_blue;
@@ -40,12 +40,12 @@ char sensorData[12];
 int sensorDataCounter = 0;
 bool sensorDataDone = false;
 
-extern uint32_t sonar_cima_mm;
-extern uint32_t sonar_baixo_mm;
-extern uint32_t sonar_frente_mm;
-extern uint32_t sonar_tras_mm;
-extern uint32_t sonar_esquerda_mm;
-extern uint32_t sonar_direita_mm;
+extern uint32_t sonar_cima_cm;
+extern uint32_t sonar_baixo_cm;
+extern uint32_t sonar_frente_cm;
+extern uint32_t sonar_tras_cm;
+extern uint32_t sonar_esquerda_cm;
+extern uint32_t sonar_direita_cm;
 
 
 //*****************************************************************************
@@ -162,18 +162,18 @@ void getCommand(){
 
 void check(){
 	
-	UARTCharPutNonBlocking(UART3_BASE, recebido);
+	UARTCharPutNonBlocking(UART_PC_COMM, recebido);
 }
 
 void readPackage(){
 
-	while(UARTCharsAvail(UART3_BASE)){
+	while(UARTCharsAvail(UART_PC_COMM)){
 		
-		package[packageCounter] = (char)UARTCharGet(UART3_BASE);
+		package[packageCounter] = (char)UARTCharGet(UART_PC_COMM);
 		
 		getCommand();
 	}
-	
+	/*
 	while(UARTCharsAvail(UART4_BASE)) {
 		sensorData[sensorDataCounter++] = (char)UARTCharGet(UART4_BASE);
 		
@@ -181,28 +181,31 @@ void readPackage(){
 			sensorDataDone = true;
 			sensorDataCounter = 0;
 			
-			/*
-			while (sensorDataDone) {
+			
+			while (!sensorDataDone) {
 				SysCtlDelay(SysCtlClockGet() / 1000000);
 			}
-			*/
+			
 		}
 	}
+	*/
+	
 }
 
 void enviaID() {
 	
-	UARTCharPutNonBlocking(UART3_BASE, 0x00);
-	UARTCharPutNonBlocking(UART3_BASE, 0x00);
-	UARTCharPutNonBlocking(UART3_BASE, 0x00);
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
 	
 }
+	
 
 void enviarDiagnostico(){
 	
 	enviaID();
 	
-	UARTCharPutNonBlocking(UART3_BASE, MESSAGE_TYPE_DIAGNOSTICO);
+	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DIAGNOSTICO);
 	
 	char c = 0x00;
 	
@@ -211,27 +214,36 @@ void enviarDiagnostico(){
 		c |= DIAGNOSTIC_READY;
 	}
 	
-	UARTCharPutNonBlocking(UART3_BASE, c);
+	UARTCharPutNonBlocking(UART_PC_COMM, c);
 }
 
 void enviarDadosSonares() {
 	
 	enviaID();
-	UARTCharPutNonBlocking(UART3_BASE, MESSAGE_TYPE_DADOS_SONAR);
+	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_SONAR);
 	
-	UARTCharPutNonBlocking(UART3_BASE, ((sonar_cima_mm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART3_BASE, (sonar_cima_mm & 0xFF));
-	UARTCharPutNonBlocking(UART3_BASE, ((sonar_baixo_mm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART3_BASE, (sonar_baixo_mm & 0xFF));
-	UARTCharPutNonBlocking(UART3_BASE, ((sonar_frente_mm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART3_BASE, (sonar_frente_mm & 0xFF));
-	UARTCharPutNonBlocking(UART3_BASE, ((sonar_tras_mm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART3_BASE, (sonar_tras_mm & 0xFF));
-	UARTCharPutNonBlocking(UART3_BASE, ((sonar_esquerda_mm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART3_BASE, (sonar_esquerda_mm & 0xFF));
-	UARTCharPutNonBlocking(UART3_BASE, ((sonar_direita_mm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART3_BASE, (sonar_direita_mm & 0xFF));
+	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_cima_cm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_cima_cm & 0xFF));
+	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_baixo_cm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_baixo_cm & 0xFF));
+	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_frente_cm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_frente_cm & 0xFF));
+	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_tras_cm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_tras_cm & 0xFF));
+	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_esquerda_cm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_esquerda_cm & 0xFF));
+	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_direita_cm & 0xFF00) >> 8));
+	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_direita_cm & 0xFF));
+	
 }
+
+/*
+void enviarDadosMPU6050() {
+	
+	enviaID();
+	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_MPU6050);
+}
+*/
 
 void readType() {
 	

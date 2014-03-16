@@ -29,23 +29,25 @@ bool current_PE1 = false;
 bool current_PE2 = false;
 bool current_PE3 = false;
 
-uint32_t sonar_cima_mm = 0;
-uint32_t sonar_baixo_mm = 0;
-uint32_t sonar_frente_mm = 0;
-uint32_t sonar_tras_mm = 0;
-uint32_t sonar_esquerda_mm = 0;
-uint32_t sonar_direita_mm = 0;
+uint32_t sonar_cima_cm = 0;
+uint32_t sonar_baixo_cm = 0;
+uint32_t sonar_frente_cm = 0;
+uint32_t sonar_tras_cm = 0;
+uint32_t sonar_esquerda_cm = 0;
+uint32_t sonar_direita_cm = 0;
+
+bool generate_pulse_flag = false;
 
 void verificaMedidas() {
 	
 	int32_t statusGPIOD = GPIOPinRead(GPIO_PORTD_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 	int32_t statusGPIOE = GPIOPinRead(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 	
-	if ((statusGPIOD & GPIO_PIN_1) && !current_PD1) { //Status do PD1 era 1, foi para 0
+	if ((statusGPIOD & GPIO_PIN_1) && !current_PD1) { //Status do PD2 era 1, foi para 0
 		current_PD1 = true;
 		start_sonar_cima = TimerValueGet(TIMER0_BASE, TIMER_A);
 	} 
-	if (!(statusGPIOD & GPIO_PIN_1) && (current_PD1)) { // Status do PD1 era 1, foi para 0
+	if (!(statusGPIOD & GPIO_PIN_1) && (current_PD1)) { // Status do PD2 era 1, foi para 0
 		current_PD1 = false;
 		counter_sonar_cima = TimerValueGet(TIMER0_BASE, TIMER_A) - start_sonar_cima;
 	}
@@ -99,25 +101,37 @@ void verificaMedidas() {
 
 void Timer0IntHandler(void) {
 	
+	TimerIntDisable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	
 	current_PD1 = false;
 	current_PD2 = false;
 	current_PD3 = false;
 	current_PE1 = false;
 	current_PE2 = false;
 	current_PE3 = false;
+	/*
+	sonar_cima_cm = counter_sonar_cima / 2900;
+	sonar_baixo_cm = counter_sonar_baixo / 2900;
+	sonar_frente_cm = counter_sonar_frente / 2900;
+	sonar_tras_cm = counter_sonar_tras / 2900;
+	sonar_esquerda_cm = counter_sonar_esquerda / 2900;
+	sonar_direita_cm = counter_sonar_direita / 2900;
+	*/
 	
-	sonar_cima_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
-	sonar_baixo_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
-	sonar_frente_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
-	sonar_tras_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
-	sonar_esquerda_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
-	sonar_direita_mm = (int32_t)(round(((double)counter_sonar_cima) / 5.8));
+	sonar_cima_cm = 0;
+	sonar_baixo_cm = 100;
+	sonar_frente_cm = 200;
+	sonar_tras_cm = 300;
+	sonar_esquerda_cm = 400;
+	sonar_direita_cm = 500;
 	
 	enviarDadosSonares();
+	//enviarDadosSonares();
 }
 
 void configuraSonar() {
 	
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_ONE_SHOT_UP);
 	TimerLoadSet(TIMER0_BASE, TIMER_A, SysCtlClockGet() / 10);
 	
@@ -131,12 +145,18 @@ void configuraSonar() {
 	GPIOIntRegister(GPIO_PORTD_BASE, verificaMedidas);
 	GPIOIntRegister(GPIO_PORTE_BASE, verificaMedidas);
 	
+	GPIOIntTypeSet(GPIO_PORTD_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_BOTH_EDGES);
+	GPIOIntTypeSet(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_BOTH_EDGES);
+	
+	IntEnable(INT_GPIOD);
+	IntEnable(INT_GPIOE);
+	
 	GPIOIntEnable(GPIO_PORTD_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 	GPIOIntEnable(GPIO_PORTE_BASE, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 	
-	IntEnable(INT_TIMER1A);
+	IntEnable(INT_TIMER0A);
    
-  TimerIntEnable(TIMER1_BASE, TIMER_TIMA_TIMEOUT);
+  TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 }
 
 void iniciaLeituraSonar() {
@@ -157,5 +177,9 @@ void iniciaLeituraSonar() {
 	counter_sonar_esquerda = temp;
 	counter_sonar_direita = temp;
 	
+	TimerLoadSet(TIMER0_BASE, TIMER_A, SysCtlClockGet() / 10);
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	TimerEnable(TIMER0_BASE, TIMER_A);
+	
+	generate_pulse_flag = true;
 }
