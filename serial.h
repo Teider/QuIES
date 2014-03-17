@@ -14,6 +14,7 @@ void echoUART(uint32_t UART_sender, uint32_t UART_receiver);
 void enviarDiagnostico(void);
 
 void enviarDadosSonares(void);
+void enviarDadosMPU6050(void);
 
 void readPackage(void);
 void getCommand(void);
@@ -22,5 +23,6 @@ void readType(void);
 void check(void);
 
 void requestMPUData(void);
+void requestSonarData(int sonar);
 
 #endif //__SERIAL_H__

@@ -12,11 +12,9 @@
 #include "motion.h"
 #include "diagnostic_msg.h"
 
-#define UART_PC_COMM	UART0_BASE
+#include "sonar.h"
 
-//extern bool debug_red;
-//extern bool debug_blue;
-//extern bool debug_green;
+#define UART_PC_COMM	UART0_BASE
 
 extern bool motoresInicializados;
 
@@ -36,16 +34,20 @@ bool pacotePronto = false;
 
 char recebido = 'r';
 
+bool read_mpu = false;
+bool read_sonar = false;
+
 char sensorData[12];
 int sensorDataCounter = 0;
 bool sensorDataDone = false;
 
-extern uint32_t sonar_cima_cm;
-extern uint32_t sonar_baixo_cm;
-extern uint32_t sonar_frente_cm;
-extern uint32_t sonar_tras_cm;
-extern uint32_t sonar_esquerda_cm;
-extern uint32_t sonar_direita_cm;
+char sonarData[3];
+bool sonarReadingDone = false;
+int sonarDataCounter = 0;
+
+extern uint32_t ultimaLeitura[6];
+
+extern double fAccel[2];
 
 
 //*****************************************************************************
@@ -54,6 +56,7 @@ extern uint32_t sonar_direita_cm;
 //
 //*****************************************************************************
 void ConfigureUART(void) {
+	
     //
     // Enable the GPIO Peripheral used by the UART.
     //
@@ -82,8 +85,8 @@ void ConfigureUART(void) {
 		UARTEnable(UART0_BASE);
 }
 
-void ConfigureXBeeUART(void)
-{
+void ConfigureXBeeUART(void) {
+	
     //
     // Enable the GPIO Peripheral used by the UART.
     //
@@ -167,28 +170,46 @@ void check(){
 
 void readPackage(){
 
+	//debug_red = false;
+	
 	while(UARTCharsAvail(UART_PC_COMM)){
 		
 		package[packageCounter] = (char)UARTCharGet(UART_PC_COMM);
 		
 		getCommand();
 	}
-	/*
+	
 	while(UARTCharsAvail(UART4_BASE)) {
-		sensorData[sensorDataCounter++] = (char)UARTCharGet(UART4_BASE);
 		
-		if (sensorDataCounter == 12) {
-			sensorDataDone = true;
-			sensorDataCounter = 0;
+		if (read_mpu) {
 			
-			
-			while (!sensorDataDone) {
-				SysCtlDelay(SysCtlClockGet() / 1000000);
+			sensorData[sensorDataCounter++] = (char)UARTCharGet(UART4_BASE);
+		
+			if (sensorDataCounter == 12) {
+				read_mpu = false;
+				sensorDataDone = true;
+				sensorDataCounter = 0;
+				
+				atualizaLeiturasMPU6050();
 			}
+		} else if (read_sonar) {
+			sonarData[sonarDataCounter++] = (char)UARTCharGet(UART4_BASE);
 			
+			if (sonarDataCounter == 3) {
+				read_sonar = false;
+				sonarDataCounter = 0;
+				atualizaLeituraSonar(sonarData[0]);
+			}
+		} else {
+			
+			char aux = (char)UARTCharGet(UART4_BASE);
+			
+			if (aux == MESSAGE_TYPE_DADOS_MPU6050) {
+				read_mpu = true;
+			}
+			else if (aux == MESSAGE_TYPE_DADOS_SONAR) read_sonar = true;
 		}
 	}
-	*/
 	
 }
 
@@ -222,28 +243,31 @@ void enviarDadosSonares() {
 	enviaID();
 	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_SONAR);
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_cima_cm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_cima_cm & 0xFF));
-	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_baixo_cm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_baixo_cm & 0xFF));
-	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_frente_cm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_frente_cm & 0xFF));
-	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_tras_cm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_tras_cm & 0xFF));
-	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_esquerda_cm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_esquerda_cm & 0xFF));
-	UARTCharPutNonBlocking(UART_PC_COMM, ((sonar_direita_cm & 0xFF00) >> 8));
-	UARTCharPutNonBlocking(UART_PC_COMM, (sonar_direita_cm & 0xFF));
-	
+	for (int i = 1; i <= 6; i++) {
+		UARTCharPutNonBlocking(UART_PC_COMM, ((ultimaLeitura[i] & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, (ultimaLeitura[i] & 0xFF));
+	}
 }
 
-/*
+
 void enviarDadosMPU6050() {
 	
 	enviaID();
 	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_MPU6050);
+	
+	int aux;
+	
+	for (int i = 0; i < 2; i++) {
+		aux = (int)fAccel[i];
+	
+		UARTCharPutNonBlocking(UART_PC_COMM, ((aux & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, (aux & 0xFF));
+	}
+	
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
 }
-*/
+
 
 void readType() {
 	
@@ -274,6 +298,15 @@ void readType() {
 }
 
 void requestMPUData() {
-	UARTCharPutNonBlocking(UART4_BASE, MESSAGE_TYPE_PEDE_DADOS);
+	
+	UARTCharPutNonBlocking(UART4_BASE, MESSAGE_TYPE_PEDE_MPU6050);
 	sensorDataDone = false;
+	
+}
+
+void requestSonarData(int sonar) {
+	
+	UARTCharPutNonBlocking(UART4_BASE, MESSAGE_TYPE_PEDE_SONAR);
+	UARTCharPutNonBlocking(UART4_BASE, (char) (sonar & 0xFF));
+	
 }

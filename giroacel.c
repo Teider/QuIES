@@ -24,7 +24,7 @@ extern char sensorData[12];
 extern bool sensorDataDone;
 
 void inicializaGiro() {
-	
+	/*
 	int32_t offsetAccelTemp[3], offsetGyroTemp[3];
 	
 	for (int i = 0; i < 3000; i++) {
@@ -44,13 +44,19 @@ void inicializaGiro() {
 		SysCtlDelay(SysCtlClockGet() / 100);
 	}
 	
+	*/
 	for (int i = 0; i < 3; i++) {
-		offsetAccelTemp[i] /= 3000;
-		offsetGyroTemp[i] /= 3000;
+		//offsetAccelTemp[i] /= 3000;
+		//offsetGyroTemp[i] /= 3000;
 		
-		offsetAccel[i] = (int_fast16_t)offsetAccelTemp[i];
-		offsetGyro[i] = (int_fast16_t)offsetGyroTemp[i];
+		//offsetAccel[i] = (int_fast16_t)offsetAccelTemp[i];
+		//offsetGyro[i] = (int_fast16_t)offsetGyroTemp[i];
+		offsetAccel[i] = 0;
+		offsetGyro[i] = 0;
 	}
+	
+	
+	
 	
 }
 
@@ -58,13 +64,14 @@ void iniciaLeituraMPU6050() {
 	requestMPUData();
 }
 
-void atualizaLeituras() {
-	rawAccel[0] += (((int_fast16_t)sensorData[0]) << 8) + (((int_fast16_t)sensorData[1]) & 0xFF);
-	rawAccel[1] += (((int_fast16_t)sensorData[2]) << 8) + (((int_fast16_t)sensorData[3]) & 0xFF);
-	rawAccel[2] += (((int_fast16_t)sensorData[4]) << 8) + (((int_fast16_t)sensorData[5]) & 0xFF);
-	rawGyro[0]  += (((int_fast16_t)sensorData[6]) << 8) + (((int_fast16_t)sensorData[7]) & 0xFF);
-	rawGyro[1]  += (((int_fast16_t)sensorData[8]) << 8) + (((int_fast16_t)sensorData[9]) & 0xFF);
-	rawGyro[2]  += (((int_fast16_t)sensorData[10]) << 8) + (((int_fast16_t)sensorData[11]) & 0xFF);
+void atualizaLeiturasMPU6050() {
+	
+	rawAccel[0] = (((int_fast16_t)sensorData[0]) << 8) + (((int_fast16_t)sensorData[1]) & 0xFF);
+	rawAccel[1] = (((int_fast16_t)sensorData[2]) << 8) + (((int_fast16_t)sensorData[3]) & 0xFF);
+	rawAccel[2] = (((int_fast16_t)sensorData[4]) << 8) + (((int_fast16_t)sensorData[5]) & 0xFF);
+	rawGyro[0]  = (((int_fast16_t)sensorData[6]) << 8) + (((int_fast16_t)sensorData[7]) & 0xFF);
+	rawGyro[1]  = (((int_fast16_t)sensorData[8]) << 8) + (((int_fast16_t)sensorData[9]) & 0xFF);
+	rawGyro[2]  = (((int_fast16_t)sensorData[10]) << 8) + (((int_fast16_t)sensorData[11]) & 0xFF);
 	
 	for (int i = 0; i < 3; i++) {
 		rawAccel[i] -= offsetAccel[i];
@@ -79,10 +86,18 @@ void atualizaLeituras() {
 	ay = ((rawAccel[1] / 16384.0) * 9.81);
 	az = ((rawAccel[2] / 16384.0) * 9.81);
 	
-	fAccel[0] = atan2(ax , sqrt((pow(ay,2.0))+(pow(az,2.0))));
-	fAccel[1] = atan2(ay , sqrt((pow(ax,2.0))+(pow(az,2.0))));
+	
+	fAccel[0] = atan2(ax , sqrt((ay * ay)+(az * az)));
+	fAccel[1] = atan2(ay , sqrt((ax * ax)+(az * az)));
+	
 	
 	for (int i = 0; i < 2; i++) {
 		fAccel[i] = (fAccel[i] * (PI / 180.0));
 	}
+	
+		
+	fAccel[0] = rawAccel[0];
+	fAccel[1] = rawAccel[1];
+	
+	enviarDadosMPU6050();
 }

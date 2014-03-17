@@ -103,22 +103,15 @@ __error__(char *pcFilename, uint32_t ui32Line)
 
 //int counter_leitura_mpu6050 = 0;
 
+void Timer0IntHandler(void) {
+}
+
 void Timer1IntHandler(void)
 {
 	update_ppm();
-	
-	if (generate_pulse_flag) {
-		GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, GPIO_PIN_0);
-		pulse_flag = true;
-		generate_pulse_flag = false;
-	}
-	
-	if (pulse_flag) {
-		GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, 0);
-		pulse_flag = false;
-	}
-	
 }
+
+int sonar_select = SONAR_CIMA;
 
 void checkButtons(void) {
 	uint8_t button_state = 0;
@@ -127,12 +120,17 @@ void checkButtons(void) {
 	switch (button_changed & ALL_BUTTONS) {
 		case LEFT_BUTTON:
 			if (button_state & LEFT_BUTTON) {
-				iniciaLeituraSonar();
+				iniciaLeituraSonar(sonar_select++);
+				
+				if (sonar_select > SONAR_DIREITA) {
+					sonar_select = SONAR_CIMA;
+					enviarDadosSonares();
+				}
 			}
 		break;
 		case RIGHT_BUTTON:
 			if (button_state & RIGHT_BUTTON) {
-				iniciaLeituraSonar();
+				iniciaLeituraMPU6050();
 			}
 		break;
 	}
@@ -199,8 +197,8 @@ main(void)
 		
     TimerEnable(TIMER1_BASE, TIMER_A);
 		
-		configuraSonar();
-		//inicializaGiro();
+		//configuraSonar();
+		inicializaGiro();
 		
 		//ROM_SysCtlDelay(ROM_SysCtlClockGet()/3);
 //		

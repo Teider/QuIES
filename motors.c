@@ -14,7 +14,7 @@
 
 #define ACCEL_SPEED (1)
 
-#define SPEED_STEP (5)
+#define SPEED_STEP (1)
 
 bool debug_red = true;
 bool debug_blue = true;
@@ -37,6 +37,7 @@ typedef struct motor {
 motor motores[4];
 
 void inicializa_motores(void) {
+	
 	for (int i = 0; i < 4; i++) {
 		motores[i].id = i;
 		motores[i].velocidade_atual = 0;
@@ -57,13 +58,13 @@ void inicializa_motores(void) {
   // Enable the GPIO pins for the LED (PF1 & PF2).
   //
 	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_0);
-	if (debug_red) ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1);
-	if (debug_blue) ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2);
-  if (debug_green) ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
+	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1);
+	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2);
+  ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
 }
 
 void changeSpeed(int id_motor, int nova_velocidade) {
-	nova_velocidade += motores[id_motor].compensacao;
+	//nova_velocidade += motores[id_motor].compensacao;
 	if (nova_velocidade > 100) nova_velocidade = 100;
 	if (nova_velocidade < 0) nova_velocidade = 0;
 	
@@ -106,6 +107,9 @@ void update_ppm(void) {
 		}
 		if(counterInici == 1250){
 			
+			//motores[0].compensacao = 10;
+			changeSpeed(motores[0].id, 9);
+			changeSpeed(motores[2].id, 2);
 			motoresInicializados = true;
 		}
 		
