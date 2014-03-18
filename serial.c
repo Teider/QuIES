@@ -40,6 +40,8 @@ bool read_sonar = false;
 char sensorData[6];
 int sensorDataCounter = 0;
 
+extern double roll, pitch, yaw;
+
 char sonarData[3];
 bool sonarReadingDone = false;
 int sonarDataCounter = 0;
@@ -213,9 +215,9 @@ void readPackage(){
 
 void enviaID() {
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x12);
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x34);
+	UARTCharPutNonBlocking(UART_PC_COMM, 0x56);
 	
 }
 	
@@ -254,17 +256,14 @@ void enviarDadosMPU6050() {
 	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_MPU6050);
 	
 		
-		UARTCharPutNonBlocking(UART_PC_COMM, (((int) roll & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, ((int) roll & 0xFF));
+		UARTCharPutNonBlocking(UART_PC_COMM, ((((int)roll) & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, (((int)roll) & 0xFF));
 	
-		UARTCharPutNonBlocking(UART_PC_COMM, (((int) pitch & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, ((int) pitch & 0xFF));
+		UARTCharPutNonBlocking(UART_PC_COMM, ((((int)pitch) & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, (((int)pitch) & 0xFF));
 			
-		UARTCharPutNonBlocking(UART_PC_COMM, (((int) yaw & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, ((int) yaw & 0xFF));
-	
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
+		UARTCharPutNonBlocking(UART_PC_COMM, ((((int)yaw) & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, (((int)yaw) & 0xFF));
 }
 
 
@@ -299,7 +298,6 @@ void readType() {
 void requestMPUData() {
 	
 	UARTCharPutNonBlocking(UART4_BASE, MESSAGE_TYPE_PEDE_MPU6050);
-	sensorDataDone = false;
 	
 }
 
