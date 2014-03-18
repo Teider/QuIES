@@ -16,12 +16,12 @@
 
 #define PI 3.14159265
 
-double fAccel[2], fGyro[3];
+
+double roll=0.0,pitch=0.0,yaw=0.0;
 int_fast16_t rawAccel[3], rawGyro[3];
 int_fast16_t offsetAccel[3], offsetGyro[3];
 
-extern char sensorData[12];
-extern bool sensorDataDone;
+extern char sensorData[6];
 
 void inicializaGiro() {
 	/*
@@ -44,18 +44,7 @@ void inicializaGiro() {
 		SysCtlDelay(SysCtlClockGet() / 100);
 	}
 	
-	*/
-	for (int i = 0; i < 3; i++) {
-		//offsetAccelTemp[i] /= 3000;
-		//offsetGyroTemp[i] /= 3000;
-		
-		//offsetAccel[i] = (int_fast16_t)offsetAccelTemp[i];
-		//offsetGyro[i] = (int_fast16_t)offsetGyroTemp[i];
-		offsetAccel[i] = 0;
-		offsetGyro[i] = 0;
-	}
-	
-	
+*/
 	
 	
 }
@@ -66,38 +55,13 @@ void iniciaLeituraMPU6050() {
 
 void atualizaLeiturasMPU6050() {
 	
-	rawAccel[0] = (((int_fast16_t)sensorData[0]) << 8) + (((int_fast16_t)sensorData[1]) & 0xFF);
-	rawAccel[1] = (((int_fast16_t)sensorData[2]) << 8) + (((int_fast16_t)sensorData[3]) & 0xFF);
-	rawAccel[2] = (((int_fast16_t)sensorData[4]) << 8) + (((int_fast16_t)sensorData[5]) & 0xFF);
-	rawGyro[0]  = (((int_fast16_t)sensorData[6]) << 8) + (((int_fast16_t)sensorData[7]) & 0xFF);
-	rawGyro[1]  = (((int_fast16_t)sensorData[8]) << 8) + (((int_fast16_t)sensorData[9]) & 0xFF);
-	rawGyro[2]  = (((int_fast16_t)sensorData[10]) << 8) + (((int_fast16_t)sensorData[11]) & 0xFF);
-	
-	for (int i = 0; i < 3; i++) {
-		rawAccel[i] -= offsetAccel[i];
-		rawGyro[i] -= offsetGyro[i];
-		
-		fGyro[i] = (((double)rawGyro[i]) / 131.0);
-	}
-	
-	
-	double ax, ay, az;
-	ax = ((rawAccel[0] / 16384.0) * 9.81);
-	ay = ((rawAccel[1] / 16384.0) * 9.81);
-	az = ((rawAccel[2] / 16384.0) * 9.81);
-	
-	
-	fAccel[0] = atan2(ax , sqrt((ay * ay)+(az * az)));
-	fAccel[1] = atan2(ay , sqrt((ax * ax)+(az * az)));
-	
-	
-	for (int i = 0; i < 2; i++) {
-		fAccel[i] = (fAccel[i] * (PI / 180.0));
-	}
-	
-		
-	fAccel[0] = rawAccel[0];
-	fAccel[1] = rawAccel[1];
-	
+	roll = (((int_fast16_t)sensorData[0]) << 8) + (((int_fast16_t)sensorData[1]) & 0xFF);
+	pitch = (((int_fast16_t)sensorData[2]) << 8) + (((int_fast16_t)sensorData[3]) & 0xFF);
+	yaw = (((int_fast16_t)sensorData[4]) << 8) + (((int_fast16_t)sensorData[5]) & 0xFF);
+
+	roll /= 60.0;
+	pitch /= 60.0;
+	yaw /= 60.0;
+
 	enviarDadosMPU6050();
 }

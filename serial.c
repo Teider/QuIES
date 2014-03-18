@@ -37,9 +37,8 @@ char recebido = 'r';
 bool read_mpu = false;
 bool read_sonar = false;
 
-char sensorData[12];
+char sensorData[6];
 int sensorDataCounter = 0;
-bool sensorDataDone = false;
 
 char sonarData[3];
 bool sonarReadingDone = false;
@@ -185,9 +184,8 @@ void readPackage(){
 			
 			sensorData[sensorDataCounter++] = (char)UARTCharGet(UART4_BASE);
 		
-			if (sensorDataCounter == 12) {
+			if (sensorDataCounter == 6) {
 				read_mpu = false;
-				sensorDataDone = true;
 				sensorDataCounter = 0;
 				
 				atualizaLeiturasMPU6050();
@@ -255,14 +253,15 @@ void enviarDadosMPU6050() {
 	enviaID();
 	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_MPU6050);
 	
-	int aux;
+		
+		UARTCharPutNonBlocking(UART_PC_COMM, (((int) roll & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, ((int) roll & 0xFF));
 	
-	for (int i = 0; i < 2; i++) {
-		aux = (int)fAccel[i];
-	
-		UARTCharPutNonBlocking(UART_PC_COMM, ((aux & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, (aux & 0xFF));
-	}
+		UARTCharPutNonBlocking(UART_PC_COMM, (((int) pitch & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, ((int) pitch & 0xFF));
+			
+		UARTCharPutNonBlocking(UART_PC_COMM, (((int) yaw & 0xFF00) >> 8));
+		UARTCharPutNonBlocking(UART_PC_COMM, ((int) yaw & 0xFF));
 	
 	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
 	UARTCharPutNonBlocking(UART_PC_COMM, 0x00);
