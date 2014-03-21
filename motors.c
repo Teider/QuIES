@@ -12,6 +12,8 @@
 
 #include "motors.h"
 
+#include "serial.h"
+
 #define ACCEL_SPEED (1)
 
 #define SPEED_STEP (1)
@@ -70,7 +72,8 @@ void changeSpeed(int id_motor, int nova_velocidade) {
 	if (nova_velocidade > 100) nova_velocidade = 100;
 	if (nova_velocidade < 0) nova_velocidade = 0;
 	
-	motores[id_motor].velocidade_atual = nova_velocidade;
+	sendMotorVelocity(id_motor, nova_velocidade);
+	//motores[id_motor].velocidade_atual = nova_velocidade;
 	
 	/*
 	motores[id_motor].velocidade_alvo = nova_velocidade;

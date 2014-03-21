@@ -21,10 +21,6 @@ extern bool motoresInicializados;
 char package[30];
 int pacoteToInt[30];
 
-char id;
-char tipo;
-char velocidade;
-
 bool led = false;
 
 int packageSize = 4;
@@ -307,3 +303,15 @@ void requestSonarData(int sonar) {
 	UARTCharPutNonBlocking(UART4_BASE, (char) (sonar & 0xFF));
 	
 }
+
+
+void sendMotorVelocity(int id_motor, int vel) {
+	
+	enviaID();
+	
+	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DEBUG_VELOCIDADE_MOTOR);
+	
+	UARTCharPutNonBlocking(UART_PC_COMM, (char)(id_motor & 0xFF));
+	UARTCharPutNonBlocking(UART_PC_COMM, (char)(vel & 0xFF));
+}
+
