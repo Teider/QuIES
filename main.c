@@ -28,7 +28,7 @@
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 //#include "driverlib/debug.h"
-//#include "driverlib/fpu.h"
+#include "driverlib/fpu.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/pin_map.h"
@@ -42,6 +42,7 @@
 #include "giroacel.h"
 #include "serial.h"
 #include "sonar.h"
+#include "control.h"
 
 #include "drivers/buttons.h"
 
@@ -58,6 +59,8 @@ extern bool generate_pulse_flag;
 bool pulse_flag;
 
 uint_fast16_t counter_sonar;
+
+extern bool motoresInicializados;
 
 
 //*****************************************************************************
@@ -106,8 +109,19 @@ __error__(char *pcFilename, uint32_t ui32Line)
 void Timer0IntHandler(void) {
 }
 
+int counter_measure_mpu6050 = 0;
+
 void Timer1IntHandler(void)
 {
+	if (motoresInicializados) {
+		if (counter_measure_mpu6050 == 10000) {
+			counter_measure_mpu6050 = 0;
+			iniciaLeituraMPU6050();
+			atualizaControle();
+		}
+		counter_measure_mpu6050++;
+	}
+	
 	update_ppm();
 }
 
@@ -150,7 +164,8 @@ main(void)
     // instructions to be used within interrupt handlers, but at the expense of
     // extra stack usage.
     //
-    //FPULazyStackingEnable();
+		FPUEnable();
+		FPULazyStackingEnable();
 
     //
     // Set the clocking to run directly from the crystal.

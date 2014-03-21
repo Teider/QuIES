@@ -14,7 +14,7 @@
 
 #include "sonar.h"
 
-#define UART_PC_COMM	UART0_BASE
+#define UART_PC_COMM	UART3_BASE
 
 extern bool motoresInicializados;
 

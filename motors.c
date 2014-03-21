@@ -25,6 +25,8 @@ int counter_ppm = 0;
 bool motoresInicializados = true;
 int counterInici = 0;
 
+int counter_atualiza_velocidade = 0;
+
 typedef struct motor {
 	int id;
 	int velocidade_atual;
@@ -68,12 +70,16 @@ void changeSpeed(int id_motor, int nova_velocidade) {
 	if (nova_velocidade > 100) nova_velocidade = 100;
 	if (nova_velocidade < 0) nova_velocidade = 0;
 	
+	motores[id_motor].velocidade_atual = nova_velocidade;
+	
+	/*
 	motores[id_motor].velocidade_alvo = nova_velocidade;
 	if (nova_velocidade > motores[id_motor].velocidade_atual) {
 		motores[id_motor].acelerando = true;
 	} else if (nova_velocidade < motores[id_motor].velocidade_atual) {
 		motores[id_motor].desacelerando = true;
 	}
+	*/
 }
 
 void update_ppm(void) {
@@ -112,23 +118,34 @@ void update_ppm(void) {
 			changeSpeed(motores[2].id, 2);
 			motoresInicializados = true;
 		}
+		/*
+		if (motoresInicializados) {
+		counter_atualiza_velocidade++;
 		
+		if (counter_atualiza_velocidade == 50) {
 		
-		for (int i = 0; i < 4; i++) {
-		if (motores[i].acelerando) {
-			motores[i].velocidade_atual += ACCEL_SPEED;
-			if (motores[i].velocidade_atual >= motores[i].velocidade_alvo) {
-				motores[i].velocidade_atual = motores[i].velocidade_alvo;
-				motores[i].acelerando = false;
-			}
-		} else if (motores[i].desacelerando) {
-			motores[i].velocidade_atual -= ACCEL_SPEED;
-			if (motores[i].velocidade_atual <= motores[i].velocidade_alvo) {
-				motores[i].velocidade_atual = 	motores[i].velocidade_alvo;
-				motores[i].desacelerando = false;
+			counter_atualiza_velocidade = 0;
+			
+			for (int i = 0; i < 4; i++) {
+				if (motores[i].acelerando) {
+					motores[i].velocidade_atual += ACCEL_SPEED;
+					if (motores[i].velocidade_atual >= motores[i].velocidade_alvo) {
+						motores[i].velocidade_atual = motores[i].velocidade_alvo;
+						motores[i].acelerando = false;
+					}
+				} else if (motores[i].desacelerando) {
+					motores[i].velocidade_atual -= ACCEL_SPEED;
+					if (motores[i].velocidade_atual <= motores[i].velocidade_alvo) {
+						motores[i].velocidade_atual = 	motores[i].velocidade_alvo;
+						motores[i].desacelerando = false;
+					}
+				}
 			}
 		}
-	}
+		
+		}
+		*/
+		
 	}
   //
   // Clear the timer interrupt.
@@ -142,4 +159,8 @@ void accelerate(int id_motor) {
 
 void decelerate(int id_motor) {
 	changeSpeed(id_motor, motores[id_motor].velocidade_atual -= SPEED_STEP);
+}
+
+void adjustSpeed(int id_motor, int vel) {
+	changeSpeed(id_motor, motores[id_motor].velocidade_atual += vel);
 }

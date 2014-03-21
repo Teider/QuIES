@@ -12,7 +12,12 @@ extern bool debug_red;
 extern bool debug_blue;
 extern bool debug_green;
 
-void getMotion(char* package){
+bool mover_frente = false;
+bool mover_tras = false;
+bool mover_esquerda = false;
+bool mover_direita = false;
+
+void getMotion(char* package) {
 	
 	packageReceived = package;
 	
@@ -79,23 +84,34 @@ void move_pousar(){
 
 void move_esquerda(){
 	
-
+	mover_frente = false;
+	mover_tras = false;
+	mover_esquerda = true;
+	mover_direita = false;
 	
 }
 
 void move_direita(){
 	
-
+	mover_frente = false;
+	mover_tras = false;
+	mover_esquerda = false;
+	mover_direita = true;
 	
 }
 
 void move_frente(){
-
-	
+	mover_frente = true;
+	mover_tras = false;
+	mover_esquerda = false;
+	mover_direita = false;
 }
 
 void move_tras(){
-	
+	mover_frente = false;
+	mover_tras = true;
+	mover_esquerda = false;
+	mover_direita = false;
 }
 
 void move_gir_horario(){
@@ -110,10 +126,10 @@ void move_gir_anti(){
 
 void move_subir(){
 	
-	accelerate(0);
-	accelerate(1);
-	accelerate(2);
-	accelerate(3);
+	if (mover_frente || mover_esquerda) accelerate(0);
+	if (mover_frente || mover_direita) accelerate(1);
+	if (mover_tras || mover_direita) accelerate(2);
+	if (mover_tras || mover_esquerda) accelerate(3);
 
 }
 
@@ -123,7 +139,6 @@ void move_descer(){
 	decelerate(1);
 	decelerate(2);
 	decelerate(3);
-	
 }
 
 

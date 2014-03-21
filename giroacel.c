@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "driverlib/fpu.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
@@ -18,8 +19,6 @@
 
 
 double roll=0.0, pitch=0.0, yaw=0.0;
-int_fast16_t rawAccel[3], rawGyro[3];
-int_fast16_t offsetAccel[3], offsetGyro[3];
 
 extern char sensorData[6];
 
@@ -58,6 +57,7 @@ void atualizaLeiturasMPU6050() {
 	roll = (((int)sensorData[0]) << 8) + (((int)sensorData[1]) & 0xFF);
 	pitch = (((int)sensorData[2]) << 8) + (((int)sensorData[3]) & 0xFF);
 	yaw = (((int)sensorData[4]) << 8) + (((int)sensorData[5]) & 0xFF);
+	
 
 	enviarDadosMPU6050();
 }
