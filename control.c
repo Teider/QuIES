@@ -4,15 +4,18 @@
 
 #include "control.h"
 
-int ajuste_motores[4];
-double output = 0.0;
+float ajuste_motores[4];
+float output = 0.0;
 
-double fator = 0.714285;
+float fator0 = 0.3;
+float fator1 = 0.3;
+float fator2 = 0.3;
+float fator3 = 0.3;
 
-double setpointRoll = 50.0, setpointPitch = 50.0, setpointYaw = 50.0;
-double setpointAltura = 50.0;
+float setpointRoll = 180.0, setpointPitch = 180.0, setpointYaw = 180.0;
+//float setpointAltura = 100.0;
 
-extern double roll, pitch, yaw;
+extern float roll, pitch, yaw;
 
 extern bool mover_frente;
 extern bool mover_tras;
@@ -23,29 +26,34 @@ void atualizaControle() {
 	
 	output = 0.0;
 	
-	output = calculaAjusteEstabilidadeRoll(setpointRoll, (roll / 3.6));
+	output = calculaAjusteEstabilidadeRoll(setpointRoll, roll);
 	
-	
-	if (mover_esquerda || mover_direita) {
-		ajuste_motores[0] -= (int)(output * fator);
-		ajuste_motores[1] += (int)(output * fator);
-		ajuste_motores[2] += (int)(output * fator);
-		ajuste_motores[3] -= (int)(output * fator);
+	for (int i = 0; i < 4; i++) {
+		ajuste_motores[i] = 0.0;
 	}
 	
-	output = calculaAjusteEstabilidadePitch(setpointPitch, (pitch / 3.6));
+	//if (mover_esquerda || mover_direita) {
+		ajuste_motores[0] -= (output * fator0);
+		ajuste_motores[1] += (output * fator1);
+		ajuste_motores[2] += (output * fator2);
+		ajuste_motores[3] -= (output * fator3);
+	//}
+	
+	output = calculaAjusteEstabilidadePitch(setpointPitch, pitch);
 
-	if (mover_frente || mover_tras) {
-		ajuste_motores[0] -= (int)(output * fator);
-		ajuste_motores[1] -= (int)(output * fator);
-		ajuste_motores[2] += (int)(output * fator);
-		ajuste_motores[3] += (int)(output * fator);
-	}
+	//if (mover_frente || mover_tras) {
+		ajuste_motores[0] -= (output * fator0);
+		ajuste_motores[1] -= (output * fator1);
+		ajuste_motores[2] += (output * fator2);
+		ajuste_motores[3] += (output * fator3);
+	//}
 	
-	if (mover_frente || mover_tras || mover_direita || mover_esquerda) {
-		for (int i = 0; i < 4; i++)	{
-			adjustSpeed(i, ajuste_motores[i]);
-		}
-	}
+	//if (mover_frente || mover_tras || mover_direita || mover_esquerda) {
+		
+		adjustCompensacao(0, (int)ajuste_motores[0]);
+		adjustCompensacao(1, (int)ajuste_motores[1]);
+		adjustCompensacao(2, (int)ajuste_motores[2]);
+		adjustCompensacao(3, (int)ajuste_motores[3]);
+	//}
 	
 }

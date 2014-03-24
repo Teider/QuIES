@@ -6,10 +6,12 @@ void inicializa_motores(void);
 void accelerate(int id_motor);
 void decelerate(int id_motor);
 
-void changeSpeed(int id_motor, int nova_velocidade);
+void changeSpeed(int id_motor, int nova_velocidade, int compensacao);
 
-void adjustSpeed(int id_motor, int vel);
+void adjustCompensacao(int id_motor, int vel);
 
 void update_ppm(void);
+
+void panic(void);
 
 #endif //__MOTORS_H__

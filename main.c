@@ -62,6 +62,10 @@ uint_fast16_t counter_sonar;
 
 extern bool motoresInicializados;
 
+bool init_control = false;
+
+bool no_ar = false, no_chao = false;
+
 
 //*****************************************************************************
 //
@@ -110,22 +114,31 @@ void Timer0IntHandler(void) {
 }
 
 int counter_measure_mpu6050 = 0;
+int counter_measure_sonar = 0;
 
 void Timer1IntHandler(void)
 {
-	if (motoresInicializados) {
+	if (motoresInicializados && init_control) {
 		if (counter_measure_mpu6050 == 10000) {
 			counter_measure_mpu6050 = 0;
 			iniciaLeituraMPU6050();
-			atualizaControle();
+			//atualizaControle();
 		}
 		counter_measure_mpu6050++;
 	}
 	
+	if (motoresInicializados && init_control) {
+		if (counter_measure_sonar == 100000) {
+			counter_measure_sonar = 0;
+			iniciaLeituraSonar(SONAR_BAIXO);
+		}
+		counter_measure_sonar++;
+	}	
+	
 	update_ppm();
 }
 
-int sonar_select = SONAR_CIMA;
+int sonar_select = SONAR_BAIXO;
 
 void checkButtons(void) {
 	uint8_t button_state = 0;
@@ -134,12 +147,7 @@ void checkButtons(void) {
 	switch (button_changed & ALL_BUTTONS) {
 		case LEFT_BUTTON:
 			if (button_state & LEFT_BUTTON) {
-				iniciaLeituraSonar(sonar_select++);
-				
-				if (sonar_select > SONAR_DIREITA) {
-					sonar_select = SONAR_CIMA;
-					enviarDadosSonares();
-				}
+				iniciaLeituraSonar(sonar_select);
 			}
 		break;
 		case RIGHT_BUTTON:
@@ -196,7 +204,7 @@ main(void)
     // Configure the two 32-bit periodic timers.
     //
     TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
-    TimerLoadSet(TIMER1_BASE, TIMER_A, SysCtlClockGet()/100000);
+    TimerLoadSet(TIMER1_BASE, TIMER_A, SysCtlClockGet()/200000);
 		
 		
     //
@@ -211,23 +219,35 @@ main(void)
     //
 		
     TimerEnable(TIMER1_BASE, TIMER_A);
+
+
+		// Configure a wide timer for timing purposes
 		
-		//configuraSonar();
-		inicializaGiro();
-		
-		//ROM_SysCtlDelay(ROM_SysCtlClockGet()/3);
-//		
-//		ROM_SysCtlDelay(ROM_SysCtlClockGet()*10/3);
-		//
-    // Loop forever while the timers run.
-    //
-	//g_bMPU6050Done_read = false;
+		SysCtlPeripheralEnable(SYSCTL_PERIPH_WTIMER0);
+		TimerConfigure(WTIMER0_BASE, TIMER_CFG_PERIODIC_UP);
+		TimerLoadSet64(WTIMER0_BASE, (((long long)1) << 60));
+		TimerEnable(WTIMER0_BASE, TIMER_A);
 	
-		
+	int counter_verify_no_ar = 0;
+	
 	while(1) {
-		SysCtlDelay((SysCtlClockGet() / 1000) / 3);
+		SysCtlDelay(SysCtlClockGet() / 1000);
 		checkButtons();
 		
 		readPackage();
+		
+		counter_verify_no_ar++;
+		
+		if (counter_verify_no_ar == 1000) {
+			counter_verify_no_ar = 0;
+			if (no_ar) {
+				enviaNoAr();
+				no_ar = false;
+			}
+			if (no_chao) {
+				enviaNoChao();
+				no_chao = false;
+			}
+		}
 	}
 }

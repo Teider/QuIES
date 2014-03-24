@@ -33,5 +33,7 @@
 
 #define MESSAGE_TYPE_DEBUG_VELOCIDADE_MOTOR	0x1C
 
+#define MESSAGE_TYPE_DELTA_T						0x1D
+
 
 #endif //__MESSAGE_TYPES_H__

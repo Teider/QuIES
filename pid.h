@@ -1,7 +1,7 @@
 #ifndef __PID_H__
 #define __PID_H__
 
-double calculaAjusteEstabilidadeRoll(double setpoint, double input);
-double calculaAjusteEstabilidadePitch(double setpoint, double input);
+float calculaAjusteEstabilidadeRoll(float setpoint, float input);
+float calculaAjusteEstabilidadePitch(float setpoint, float input);
 
 #endif //__CONTROL_H__

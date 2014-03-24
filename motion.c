@@ -7,6 +7,7 @@
 char* packageReceived;
 
 bool moving = false;
+bool decolando = false;
 
 extern bool debug_red;
 extern bool debug_blue;
@@ -16,6 +17,10 @@ bool mover_frente = false;
 bool mover_tras = false;
 bool mover_esquerda = false;
 bool mover_direita = false;
+
+extern bool init_control;
+
+extern bool no_chao;
 
 void getMotion(char* package) {
 	
@@ -73,21 +78,38 @@ void move_parar(){
 
 void move_decolar(){
 
+	decolando = true;
+	//changeSpeed(0,100,0);
+	//changeSpeed(1,100,0);
+	//changeSpeed(2,100,0);
+	//changeSpeed(3,100,0);
 	
 }
 
 void move_pousar(){
 	
-
+	mover_frente = false;
+	mover_tras = false;
+	mover_esquerda = false;
+	mover_direita = false;
+	
+	init_control = false;
+	
+	decolando = false;
+	
+	void panic();
+	
+	no_chao = true;
 	
 }
 
-void move_esquerda(){
+void move_esquerda() {
 	
 	mover_frente = false;
 	mover_tras = false;
 	mover_esquerda = true;
-	mover_direita = false;
+	mover_direita = true;
+	
 	
 }
 
@@ -95,20 +117,20 @@ void move_direita(){
 	
 	mover_frente = false;
 	mover_tras = false;
-	mover_esquerda = false;
+	mover_esquerda = true;
 	mover_direita = true;
 	
 }
 
 void move_frente(){
 	mover_frente = true;
-	mover_tras = false;
+	mover_tras = true;
 	mover_esquerda = false;
 	mover_direita = false;
 }
 
 void move_tras(){
-	mover_frente = false;
+	mover_frente = true;
 	mover_tras = true;
 	mover_esquerda = false;
 	mover_direita = false;
@@ -116,20 +138,24 @@ void move_tras(){
 
 void move_gir_horario(){
 	
+	
+	init_control = true;
 
 }
 
 void move_gir_anti(){
 	
 
+	init_control = false;
+	
 }
 
 void move_subir(){
 	
-	if (mover_frente || mover_esquerda) accelerate(0);
-	if (mover_frente || mover_direita) accelerate(1);
-	if (mover_tras || mover_direita) accelerate(2);
-	if (mover_tras || mover_esquerda) accelerate(3);
+	accelerate(0);
+	accelerate(1);
+	accelerate(2);
+	accelerate(3);
 
 }
 

@@ -26,4 +26,6 @@ void iniciaLeituraSonar(int sonar) {
 void atualizaLeituraSonar(int sonar) {
 	
 	ultimaLeitura[sonar] = (((uint32_t)sonarData[1]) << 8) + ((uint32_t) sonarData[2]);
+	
+	enviarDadosSonares();
 }

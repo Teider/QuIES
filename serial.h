@@ -25,6 +25,11 @@ void check(void);
 void requestMPUData(void);
 void requestSonarData(int sonar);
 
-void sendMotorVelocity(int id_motor, int vel);
+void sendMotorVelocity(int id_motor, int vel, int comp);
+
+void enviarDelta_t(int delta_t);
+
+void enviaNoAr(void);
+void enviaNoChao(void);
 
 #endif //__SERIAL_H__

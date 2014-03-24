@@ -16,6 +16,8 @@
 
 #define UART_PC_COMM	UART3_BASE
 
+#define SERIAL_SPEED 9600
+
 extern bool motoresInicializados;
 
 char package[30];
@@ -36,7 +38,7 @@ bool read_sonar = false;
 char sensorData[6];
 int sensorDataCounter = 0;
 
-extern double roll, pitch, yaw;
+extern float roll, pitch, yaw;
 
 char sonarData[3];
 bool sonarReadingDone = false;
@@ -44,7 +46,7 @@ int sonarDataCounter = 0;
 
 extern uint32_t ultimaLeitura[6];
 
-extern double fAccel[2];
+extern float fAccel[2];
 
 
 //*****************************************************************************
@@ -75,7 +77,7 @@ void ConfigureUART(void) {
     // Use the internal 16MHz oscillator as the UART clock source.
     //
     UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);
-		UARTConfigSetExpClk(UART0_BASE, 16000000, 9600,
+		UARTConfigSetExpClk(UART0_BASE, 16000000, SERIAL_SPEED,
                         (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
                          UART_CONFIG_PAR_NONE));
 
@@ -105,7 +107,7 @@ void ConfigureXBeeUART(void) {
     // Use the internal 16MHz oscillator as the UART clock source.
     //
     UARTClockSourceSet(UART3_BASE, UART_CLOCK_PIOSC);
-		UARTConfigSetExpClk(UART3_BASE, 16000000, 9600,
+		UARTConfigSetExpClk(UART3_BASE, 16000000, SERIAL_SPEED,
                         (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
                          UART_CONFIG_PAR_NONE));
 		
@@ -135,7 +137,7 @@ void ConfigureUARTSensores() {
     // Use the internal 16MHz oscillator as the UART clock source.
     //
     UARTClockSourceSet(UART4_BASE, UART_CLOCK_PIOSC);
-		UARTConfigSetExpClk(UART4_BASE, 16000000, 9600,
+		UARTConfigSetExpClk(UART4_BASE, 16000000, SERIAL_SPEED,
                         (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
                          UART_CONFIG_PAR_NONE));
 		
@@ -162,7 +164,7 @@ void getCommand(){
 
 void check(){
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, recebido);
+	UARTCharPut(UART_PC_COMM, recebido);
 }
 
 void readPackage(){
@@ -206,14 +208,13 @@ void readPackage(){
 			else if (aux == MESSAGE_TYPE_DADOS_SONAR) read_sonar = true;
 		}
 	}
-	
 }
 
 void enviaID() {
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x12);
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x34);
-	UARTCharPutNonBlocking(UART_PC_COMM, 0x56);
+	UARTCharPut(UART_PC_COMM, 0x12);
+	UARTCharPut(UART_PC_COMM, 0x34);
+	UARTCharPut(UART_PC_COMM, 0x56);
 	
 }
 	
@@ -222,7 +223,7 @@ void enviarDiagnostico(){
 	
 	enviaID();
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DIAGNOSTICO);
+	UARTCharPut(UART_PC_COMM, MESSAGE_TYPE_DIAGNOSTICO);
 	
 	char c = 0x00;
 	
@@ -231,17 +232,27 @@ void enviarDiagnostico(){
 		c |= DIAGNOSTIC_READY;
 	}
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, c);
+	UARTCharPut(UART_PC_COMM, c);
+}
+
+void enviarDelta_t(int delta_t) {
+
+	enviaID();
+	UARTCharPut (UART_PC_COMM, MESSAGE_TYPE_DELTA_T);
+		
+	UARTCharPut(UART_PC_COMM, ((delta_t & 0xFF00) >> 8));
+	UARTCharPut (UART_PC_COMM, delta_t & 0xFF);
+
 }
 
 void enviarDadosSonares() {
 	
 	enviaID();
-	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_SONAR);
+	UARTCharPut(UART_PC_COMM, MESSAGE_TYPE_DADOS_SONAR);
 	
 	for (int i = 1; i <= 6; i++) {
-		UARTCharPutNonBlocking(UART_PC_COMM, ((ultimaLeitura[i] & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, (ultimaLeitura[i] & 0xFF));
+		UARTCharPut(UART_PC_COMM, ((ultimaLeitura[i] & 0xFF00) >> 8));
+		UARTCharPut(UART_PC_COMM, (ultimaLeitura[i] & 0xFF));
 	}
 }
 
@@ -249,17 +260,17 @@ void enviarDadosSonares() {
 void enviarDadosMPU6050() {
 	
 	enviaID();
-	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DADOS_MPU6050);
+	UARTCharPut(UART_PC_COMM, MESSAGE_TYPE_DADOS_MPU6050);
 	
 		
-		UARTCharPutNonBlocking(UART_PC_COMM, ((((int)roll) & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, (((int)roll) & 0xFF));
+		UARTCharPut(UART_PC_COMM, ((((int)roll) & 0xFF00) >> 8));
+		UARTCharPut(UART_PC_COMM, (((int)roll) & 0xFF));
 	
-		UARTCharPutNonBlocking(UART_PC_COMM, ((((int)pitch) & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, (((int)pitch) & 0xFF));
+		UARTCharPut(UART_PC_COMM, ((((int)pitch) & 0xFF00) >> 8));
+		UARTCharPut(UART_PC_COMM, (((int)pitch) & 0xFF));
 			
-		UARTCharPutNonBlocking(UART_PC_COMM, ((((int)yaw) & 0xFF00) >> 8));
-		UARTCharPutNonBlocking(UART_PC_COMM, (((int)yaw) & 0xFF));
+		UARTCharPut(UART_PC_COMM, ((((int)yaw) & 0xFF00) >> 8));
+		UARTCharPut(UART_PC_COMM, (((int)yaw) & 0xFF));
 }
 
 
@@ -293,25 +304,40 @@ void readType() {
 
 void requestMPUData() {
 	
-	UARTCharPutNonBlocking(UART4_BASE, MESSAGE_TYPE_PEDE_MPU6050);
+	UARTCharPut(UART4_BASE, MESSAGE_TYPE_PEDE_MPU6050);
 	
 }
 
 void requestSonarData(int sonar) {
 	
-	UARTCharPutNonBlocking(UART4_BASE, MESSAGE_TYPE_PEDE_SONAR);
-	UARTCharPutNonBlocking(UART4_BASE, (char) (sonar & 0xFF));
+	UARTCharPut(UART4_BASE, MESSAGE_TYPE_PEDE_SONAR);
+	UARTCharPut(UART4_BASE, (char) (sonar & 0xFF));
 	
 }
 
 
-void sendMotorVelocity(int id_motor, int vel) {
+void sendMotorVelocity(int id_motor, int vel, int comp) {
 	
 	enviaID();
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, MESSAGE_TYPE_DEBUG_VELOCIDADE_MOTOR);
+	UARTCharPut(UART_PC_COMM, MESSAGE_TYPE_DEBUG_VELOCIDADE_MOTOR);
 	
-	UARTCharPutNonBlocking(UART_PC_COMM, (char)(id_motor & 0xFF));
-	UARTCharPutNonBlocking(UART_PC_COMM, (char)(vel & 0xFF));
+	UARTCharPut(UART_PC_COMM, (char)(id_motor & 0xFF));
+	UARTCharPut(UART_PC_COMM, (char)(vel & 0xFF));
+	UARTCharPut(UART_PC_COMM, (char)(comp & 0xFF));
 }
 
+void enviaNoAr() {
+	
+	enviaID();
+	
+	UARTCharPut(UART_PC_COMM, MESSAGE_TYPE_NO_AR);
+	
+}
+
+void enviaNoChao() {
+	
+	enviaID();
+	
+	UARTCharPut(UART_PC_COMM, MESSAGE_TYPE_NO_CHAO);
+}
